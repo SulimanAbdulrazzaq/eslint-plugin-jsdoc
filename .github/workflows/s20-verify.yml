@@ -1,0 +1,53 @@
+name: s20-verify
+on: push
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    name: lint, tsc, test, docs (node ${{ matrix.node }}, eslint ${{ matrix.eslint }})
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: '22.22.2'
+            eslint: '10'
+          - node: '22.22.2'
+            eslint: '9'
+          - node: '24.15.0'
+            eslint: '10'
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Which tree ran
+        run: git log -3 --format='%H %T %s'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: pnpm install
+      - run: pnpm add -D eslint@${{ matrix.eslint }}
+      - name: build
+        if: matrix.eslint == '10' && matrix.node == '22.22.2'
+        run: pnpm build
+      - name: lint
+        if: matrix.eslint == '10' && matrix.node == '22.22.2'
+        continue-on-error: true
+        run: pnpm lint
+      - name: tsc
+        if: matrix.eslint == '10' && matrix.node == '22.22.2'
+        run: pnpm tsc || echo 'TSC FAILED'
+      - name: test
+        run: pnpm test
+      - name: docs regenerate and compare
+        if: matrix.eslint == '10' && matrix.node == '22.22.2'
+        run: |
+          git checkout -- package.json pnpm-lock.yaml 2>/dev/null || true
+          git status --porcelain | head
+          pnpm run create-docs || echo 'CREATE-DOCS FAILED'
+          echo "--- docs changed by the generator:"
+          git status --porcelain | head -20
+          git diff --stat | tail -5
+          git diff -- docs | head -80
