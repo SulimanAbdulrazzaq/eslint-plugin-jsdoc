@@ -97,20 +97,14 @@ export default iterateJsdoc(({
     }
 
     if (publicOnly) {
-      /** @type {import('./requireJsdoc.js').RequireJsdocOpts} */
-      const opt = {
-        ancestorsOnly: Boolean(publicOnly?.ancestorsOnly ?? false),
-        esm: Boolean(publicOnly?.esm ?? true),
-        initModuleExports: Boolean(publicOnly?.cjs ?? true),
-        initWindow: Boolean(publicOnly?.window ?? false),
-      };
       /* c8 ignore next -- Fallback to deprecated method */
       const {
         // @ts-expect-error ESLint < 10
         sourceCode = context.getSourceCode(),
       } = context;
       const exported = exportParser.isUncommentedExport(
-        /** @type {import('eslint').Rule.Node} */ (node), sourceCode, opt, settings,
+        /** @type {import('eslint').Rule.Node} */ (node), sourceCode,
+        exportParser.getPublicOnlyOptions(publicOnly), settings,
       );
 
       if (!exported) {
