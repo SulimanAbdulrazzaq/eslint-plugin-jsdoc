@@ -219,6 +219,95 @@ describe('jsdoc()', () => {
   });
 });
 
+describe('"all" configs', () => {
+  const allRuleNames = Object.keys(jsdocDefault.rules ?? {}).map((ruleName) => {
+    return `jsdoc/${ruleName}`;
+  });
+
+  /**
+   * @param {string} configName
+   * @returns {string[]}
+   */
+  const getOffRules = (configName) => {
+    const config = /** @type {import('eslint').Linter.Config} */ (
+      jsdocDefault.configs?.[configName]
+    );
+    return Object.entries(config.rules ?? {}).filter(([
+      , value,
+    ]) => {
+      return value === 'off';
+    }).map(([
+      ruleName,
+    ]) => {
+      return ruleName;
+    }).toSorted();
+  };
+
+  const alwaysOff = [
+    'jsdoc/check-examples',
+    'jsdoc/match-name',
+    'jsdoc/no-missing-syntax',
+    'jsdoc/no-restricted-syntax',
+    'jsdoc/no-unnecessary-type-assertion',
+    'jsdoc/require-tags',
+    'jsdoc/text-escaping',
+  ];
+
+  it('lists every rule and turns on all but the excluded ones', () => {
+    for (const [
+      configName,
+      extraOff,
+    ] of /** @type {[string, string[]][]} */ ([
+      [
+        'flat/all', [
+          'jsdoc/no-types',
+          'jsdoc/ts-ban-ts-comment',
+          'jsdoc/ts-method-signature-style',
+          'jsdoc/ts-no-unnecessary-template-expression',
+          'jsdoc/ts-prefer-function-type',
+        ],
+      ],
+      [
+        'flat/all-typescript', [
+          'jsdoc/no-undefined-types',
+          'jsdoc/require-param-type',
+          'jsdoc/require-property-type',
+          'jsdoc/require-returns-type',
+        ],
+      ],
+      [
+        'flat/all-typescript-flavor', [
+          'jsdoc/no-types',
+          'jsdoc/no-undefined-types',
+        ],
+      ],
+    ])) {
+      const config = /** @type {import('eslint').Linter.Config} */ (
+        jsdocDefault.configs?.[configName]
+      );
+      expect(config.name).to.equal(`jsdoc/${configName}`);
+      expect(Object.keys(config.rules ?? {}).toSorted()).to.deep.equal(allRuleNames.toSorted());
+      expect(getOffRules(configName)).to.deep.equal([
+        ...alwaysOff,
+        ...extraOff,
+      ].toSorted());
+    }
+  });
+
+  it('uses "error" in the `-error` variants', () => {
+    const config = /** @type {import('eslint').Linter.Config} */ (
+      jsdocDefault.configs?.['flat/all-error']
+    );
+    expect(config.rules?.['jsdoc/require-description']).to.equal('error');
+    expect(config.rules?.['jsdoc/require-param']).to.equal('error');
+    expect(
+      /** @type {import('eslint').Linter.Config} */ (
+        jsdocDefault.configs?.['flat/all']
+      ).rules?.['jsdoc/require-description'],
+    ).to.equal('warn');
+  });
+});
+
 describe('buildForbidRuleDefinition', () => {
   it('Falls back in description when `description` and `contextName` are missing', () => {
     const rule = buildForbidRuleDefinition({
