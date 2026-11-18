@@ -1,0 +1,30 @@
+jobs:
+  verify:
+    name: run round-19 probes with the real dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - run: pnpm install
+      - name: versions
+        run: |
+          node -e "console.log('jsdoccomment', require('./node_modules/@es-joy/jsdoccomment/package.json').version)"
+          node -e "console.log('eslint', require('./node_modules/eslint/package.json').version)"
+      - name: run probes
+        run: |
+          for f in $(find r19verify -name '*.mjs' ! -name lib.mjs ! -name harness.mjs | sort); do
+            echo "##### $f"
+            (cd "$(dirname "$f")" && timeout 180 node "$(basename "$f")") 2>&1 | head -400
+          done
+          echo "##### END"
+    timeout-minutes: 30
+name: verify r19
+on:
+  push:
+    branches:
+      - s20ci/**
