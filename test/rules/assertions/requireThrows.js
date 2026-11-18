@@ -391,6 +391,22 @@ export default /** @type {import('../index.js').TestCases} */ ({
         },
       ],
     },
+    {
+      code: `
+          /**
+           *
+           */
+          function quuxNegativeDocsCheck () {
+            throw new Error('err')
+          }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Missing JSDoc @throws declaration.',
+        },
+      ],
+    },
   ],
   valid: [
     {
