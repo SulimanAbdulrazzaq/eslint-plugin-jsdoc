@@ -157,7 +157,8 @@ export const getJsdocProcessorPlugin = (options = {}) => {
    *   codeStartLine: number,
    *   codeStartCol: number,
    *   nonJSPrefacingCols: number,
-   *   commentLineCols: [number, number]
+   *   commentLineCols: [number, number],
+   *   paddedLines: Set<number>
    * }} OtherInfo
    */
 
@@ -240,8 +241,18 @@ export const getJsdocProcessorPlugin = (options = {}) => {
         nonJSPrefacingLines,
         string,
       }) {
+        // The lines of the linted code (from 1) from which `paddedIndent`
+        //   spaces are removed
+        /** @type {Set<Integer>} */
+        const paddedLines = new Set();
+        // Spaces at the very start are replaced by a line break too
+        let addedLines = 0;
         const src = paddedIndent ?
-          string.replaceAll(new RegExp(`(^|\n) {${paddedIndent}}(?!$)`, 'gv'), '\n') :
+          string.replaceAll(new RegExp(`(^|\n) {${paddedIndent}}(?!$)`, 'gv'), (_match, lineBreak, offset) => {
+            paddedLines.add(countChars(string.slice(0, offset), '\n') + 2 + addedLines);
+            addedLines += Number(!lineBreak);
+            return '\n';
+          }) :
           string;
 
         // Programmatic ESLint API: https://eslint.org/docs/developer-guide/nodejs-api
@@ -258,6 +269,11 @@ export const getJsdocProcessorPlugin = (options = {}) => {
                                * }}
                                */ (tag).line + nonJSPrefacingLines;
         const codeStartCol = likelyNestedJSDocIndentSpace;
+
+        // Code on the line of the tag follows the tag (e.g., `@example `)
+        const tagLineCols = !nonJSPrefacingLines && 'source' in tag ?
+          tag.source[0].tokens.tag.length + 1 :
+          0;
 
         textsAndFileNames.push({
           filename: file,
@@ -283,7 +299,8 @@ export const getJsdocProcessorPlugin = (options = {}) => {
           codeStartLine,
           commentLineCols,
           ext,
-          nonJSPrefacingCols,
+          nonJSPrefacingCols: nonJSPrefacingCols + tagLineCols,
+          paddedLines,
           targetTagName,
         });
       };
@@ -322,6 +339,22 @@ export const getJsdocProcessorPlugin = (options = {}) => {
       };
     };
 
+    /**
+     * The columns from after the tag to the default value of a `@param` or
+     *   `@property` (e.g., ` [a=` of `@param [a=1]`), less the added `(`.
+     * @param {import('comment-parser').Spec} tag
+     * @returns {Integer}
+     */
+    const getDefaultCols = (tag) => {
+      const {
+        name,
+        postTag,
+        postType,
+        type,
+      } = tag.source[0].tokens;
+      return postTag.length + type.length + postType.length + name.indexOf('=') - 1;
+    };
+
     if (checkDefaults) {
       const filenameInfo = getFilenameInfo(matchingFileNameDefaults, 'jsdoc-defaults');
       forEachPreferredTag(jsdoc, 'default', (tag, targetTagName) => {
@@ -330,7 +363,10 @@ export const getJsdocProcessorPlugin = (options = {}) => {
         }
 
         checkSource({
+          // The value follows the tag, less the added `(`
+          cols: -1,
           source: `(${getTagDescription(tag)})`,
+          tag,
           targetTagName,
           ...filenameInfo,
         });
@@ -345,7 +381,9 @@ export const getJsdocProcessorPlugin = (options = {}) => {
         }
 
         checkSource({
+          cols: getDefaultCols(tag),
           source: `(${tag.default})`,
+          tag,
           targetTagName,
           ...filenameInfo,
         });
@@ -360,7 +398,9 @@ export const getJsdocProcessorPlugin = (options = {}) => {
         }
 
         checkSource({
+          cols: getDefaultCols(tag),
           source: `(${tag.default})`,
+          tag,
           targetTagName,
           ...filenameInfo,
         });
@@ -551,6 +591,7 @@ export const getJsdocProcessorPlugin = (options = {}) => {
               codeStartLine,
               commentLineCols,
               nonJSPrefacingCols,
+              paddedLines,
               targetTagName,
             } = otherInfo[idx];
 
@@ -587,7 +628,7 @@ export const getJsdocProcessorPlugin = (options = {}) => {
                 codeCtxColumn + codeStartCol + (
               // This might not work for line 0, but line 0 is unlikely for examples
                 line <= 1 ? nonJSPrefacingCols + firstLinePrefixLength : preTagSpaceLength
-              ) + column;
+              ) + (paddedLines.has(line) ? paddedIndent : 0) + column;
 
               msg.message = '@' + targetTagName + ' ' + (severity === 2 ? 'error' : 'warning') +
                 (ruleId ? ' (' + ruleId + ')' : '') + ': ' +
@@ -595,7 +636,8 @@ export const getJsdocProcessorPlugin = (options = {}) => {
                 messageText;
               msg.line = startLine;
               msg.column = startCol;
-              msg.endLine = endLine ? startLine + endLine : startLine;
+              // `startLine` already includes `line`
+              msg.endLine = endLine ? startLine - line + endLine : startLine;
               // added `- column` to offset what `endColumn` already seemed to include
               msg.endColumn = endColumn ? startCol - column + endColumn : startCol;
             }
