@@ -1780,6 +1780,45 @@ export default /** @type {import('../index.js').TestCases} */ ({
     },
     {
       code: `
+        /**
+         * Gets one.
+         */
+        const one = () => new Promise((resolve) => {
+          resolve(1);
+        });
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Missing JSDoc @returns declaration.',
+        },
+      ],
+    },
+    {
+      code: `
+        /**
+         * @param ms time in millis
+         */
+        export const sleep = (ms: number) =>
+          new Promise<void>((res) => setTimeout(res, ms));
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Missing JSDoc @returns declaration.',
+        },
+      ],
+      languageOptions: {
+        parser: typescriptEslintParser,
+      },
+      options: [
+        {
+          forceReturnsWithAsync: true,
+        },
+      ],
+    },
+    {
+      code: `
       /**
        * Reads a test fixture.
        */
@@ -3084,6 +3123,16 @@ export default /** @type {import('../index.js').TestCases} */ ({
       languageOptions: {
         parser: typescriptEslintParser,
       },
+    },
+    {
+      code: `
+        /**
+         * @param ms time in millis
+         */
+        export const sleep = (ms) => new Promise((resolve) => {
+          setTimeout(() => resolve(), ms);
+        });
+      `,
     },
     {
       code: `

@@ -5686,6 +5686,22 @@ function quux (foo) {
     },
     {
       code: `
+      export const sleep = () => new Promise<void>((res) => setTimeout(res, 1));
+    `,
+      languageOptions: {
+        parser: typescriptEslintParser,
+      },
+      options: [
+        {
+          exemptEmptyFunctions: true,
+          require: {
+            ArrowFunctionExpression: true,
+          },
+        },
+      ],
+    },
+    {
+      code: `
       const test = {};
       /**
        * test
