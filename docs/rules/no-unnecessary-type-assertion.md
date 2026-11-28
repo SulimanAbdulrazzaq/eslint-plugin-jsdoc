@@ -437,6 +437,38 @@ var mode = 'a';
  */
 const {mode} = {mode: 'a'};
 // Message: The @type tag declaring "{mode: string}" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+const x = /** @type {number} */ (// The count
+  n);
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+const x = /** @type {number} */ (n // The count
+);
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+let i = 0;
+const x = /** @type {number} */ (i++, n);
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+let i = 0;
+foo(/** @type {number} */ (i++, n));
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+let i = 0;
+const x = globalThis.b ? /** @type {number} */ (i++, n) : 6;
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
+
+const n = 5;
+let i = 0;
+function quux () {
+  return /** @type {number} */ (i++, n);
+}
+// Message: The @type tag declaring "number" is redundant as TypeScript infers it automatically.
 ````
 
 
