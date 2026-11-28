@@ -949,6 +949,110 @@ export default /** @type {import('../index.js').TestCases} */ ({
         const {mode} = {mode: 'a'};
       `,
     },
+    {
+      code: `
+        const n = 5;
+        const x = /** @type {number} */ (// The count
+          n);
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: null,
+    },
+    {
+      code: `
+        const n = 5;
+        const x = /** @type {number} */ (n // The count
+        );
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: null,
+    },
+    {
+      code: `
+        const n = 5;
+        let i = 0;
+        const x = /** @type {number} */ (i++, n);
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: null,
+    },
+    {
+      code: `
+        const n = 5;
+        let i = 0;
+        foo(/** @type {number} */ (i++, n));
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: null,
+    },
+    {
+      code: `
+        const n = 5;
+        let i = 0;
+        const x = globalThis.b ? /** @type {number} */ (i++, n) : 6;
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: null,
+    },
+    {
+      code: `
+        const n = 5;
+        let i = 0;
+        function quux () {
+          return /** @type {number} */ (i++, n);
+        }
+      `,
+      errors: [
+        {
+          line: 5,
+          message: 'The @type tag declaring "number" is redundant as TypeScript infers it automatically.',
+        },
+      ],
+      filename: 'dummy.js',
+      languageOptions,
+      output: `
+        const n = 5;
+        let i = 0;
+        function quux () {
+          return i++, n;
+        }
+      `,
+    },
   ],
   valid: [
     {
