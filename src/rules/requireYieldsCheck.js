@@ -49,7 +49,7 @@ const checkTagName = (utils, report, tagName) => {
     return [];
   }
 
-  const tags = utils.getTags(preferredTagName);
+  const tags = utils.getTagsWithAliases(preferredTagName);
 
   if (tags.length === 0) {
     return [];

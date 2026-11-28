@@ -352,6 +352,21 @@ export default /** @type {import('../index.js').TestCases} */ ({
         },
       ],
     },
+    {
+      code: `
+        /**
+         * Counts.
+         * @yield {number} A number.
+         */
+        function * count () {}
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'JSDoc @yields declaration present but yield expression not available in function.',
+        },
+      ],
+    },
   ],
   valid: [
     {

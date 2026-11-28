@@ -2245,6 +2245,24 @@ export default /** @type {import('../index.js').TestCases} */ ({
       ],
       output: '/**\r\n * @param a\r\n * @returns\r\n */\r\nfunction quux (a) {\r\n  return a;\r\n}',
     },
+    {
+      code: `
+        /**
+         * Gets one.
+         * @return {number} One.
+         * @returns {number} One.
+         */
+        function one () {
+          return 1;
+        }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Found more than one @returns declaration.',
+        },
+      ],
+    },
   ],
   valid: [
     {
@@ -3226,6 +3244,22 @@ export default /** @type {import('../index.js').TestCases} */ ({
       languageOptions: {
         parser: typescriptEslintParser,
       },
+    },
+    {
+      code: `
+        /**
+         * Gets one.
+         * @return {number} One.
+         */
+        function one () {
+          return 1;
+        }
+      `,
+      options: [
+        {
+          enableFixer: true,
+        },
+      ],
     },
   ],
 });

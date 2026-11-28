@@ -595,5 +595,16 @@ export default /** @type {import('../index.js').TestCases} */ ({
           }
       `,
     },
+    {
+      code: `
+        /**
+         * Fails.
+         * @exception {Error} Always.
+         */
+        function fail () {
+          throw new Error('no');
+        }
+      `,
+    },
   ],
 });

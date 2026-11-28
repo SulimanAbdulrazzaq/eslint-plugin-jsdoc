@@ -555,6 +555,7 @@ import esquery from 'esquery';
  *   hasThrowValue: HasThrowValue,
  *   isAsync: IsAsync,
  *   getTags: GetTags,
+ *   getTagsWithAliases: GetTags,
  *   getPresentTags: GetPresentTags,
  *   filterTags: FilterTags,
  *   filterAllTags: FilterAllTags,
@@ -1816,6 +1817,23 @@ const getUtils = (
   /** @type {GetTags} */
   utils.getTags = (tagName) => {
     return jsdocUtils.getTags(jsdoc, tagName);
+  };
+
+  // A tag written with an alias of the preferred tag, e.g., `@return` for
+  //   `@returns`, documents the same thing; `check-tag-names` reports the
+  //   alias itself
+  /** @type {GetTags} */
+  utils.getTagsWithAliases = (tagName) => {
+    return jsdocUtils.filterTags(jsdoc, ({
+      tag,
+    }) => {
+      const preferred = utils.getPreferredTagNameObject({
+        tagName: tag,
+      });
+      return (typeof preferred === 'object' ?
+        /** @type {{replacement?: string}} */ (preferred).replacement :
+        preferred) === tagName;
+    });
   };
 
   /** @type {GetPresentTags} */
