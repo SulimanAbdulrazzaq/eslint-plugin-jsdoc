@@ -82,6 +82,12 @@ const hasReturnValue = (node, throwOnNullReturn, promFilter) => {
     case 'ArrowFunctionExpression':
     case 'FunctionDeclaration':
     case 'FunctionExpression': {
+      // As for `return new Promise(...)`, let the caller decide on a
+      //   `new Promise(...)` expression body, e.g., by its executor
+      if (promFilter && 'expression' in node && node.expression && isNewPromiseExpression(node.body)) {
+        return promFilter(node.body);
+      }
+
       return 'expression' in node && node.expression && (!isNewPromiseExpression(
         node.body,
       ) || !isVoidPromise(node.body)) ||
@@ -218,7 +224,13 @@ const allBrancheshaveReturnValues = (node, promFilter) => {
     case 'ArrowFunctionExpression':
     case 'FunctionDeclaration':
     case 'FunctionExpression': {
-      return 'expression' in node && node.expression && (!isNewPromiseExpression(node.body) || !isVoidPromise(node.body)) ||
+      // As for `return new Promise(...)`, let the caller decide on a
+      //   `new Promise(...)` expression body
+      if ('expression' in node && node.expression && isNewPromiseExpression(node.body)) {
+        return promFilter(node.body);
+      }
+
+      return 'expression' in node && node.expression ||
       allBrancheshaveReturnValues(node.body, promFilter) ||
       /** @type {import('@typescript-eslint/types').TSESTree.BlockStatement} */
       (node.body).body.some((nde) => {
