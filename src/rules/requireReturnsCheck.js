@@ -117,7 +117,7 @@ export default iterateJsdoc(({
     return;
   }
 
-  const tags = utils.getTags(tagName);
+  const tags = utils.getTagsWithAliases(tagName);
 
   if (tags.length === 0) {
     return;
