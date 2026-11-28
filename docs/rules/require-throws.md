@@ -419,5 +419,13 @@ function quux () {
     return 1;
   })();
 }
+
+/**
+ * Fails.
+ * @exception {Error} Always.
+ */
+function fail () {
+  throw new Error('no');
+}
 ````
 
