@@ -938,6 +938,23 @@ export default /** @type {import('../index.js').TestCases} */ ({
         },
       ],
     },
+    {
+      code: `
+        /**
+         * Logs.
+         * @return {number} One.
+         */
+        function log () {
+          console.log(1);
+        }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'JSDoc @returns declaration present but return expression not available in function.',
+        },
+      ],
+    },
   ],
   valid: [
     {

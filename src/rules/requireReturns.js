@@ -77,7 +77,7 @@ export default iterateJsdoc(({
     return;
   }
 
-  const tags = utils.getTags(tagName);
+  const tags = utils.getTagsWithAliases(tagName);
 
   if (tags.length > 1) {
     report(`Found more than one @${tagName} declaration.`);
