@@ -43,6 +43,7 @@ export default iterateJsdoc(({
   context,
   indent,
   jsdoc,
+  node: documentedNode,
   settings,
   sourceCode,
   utils,
@@ -104,12 +105,15 @@ export default iterateJsdoc(({
   let takenNames;
 
   /**
-   * The names the top of the file already gives a type or import meaning:
-   *   an import, a `require()` alias, a class, a TypeScript type, enum or
-   *   namespace, a `@typedef` or an `@import`. An `@import` added by the fixer
-   *   (which is type-only, so a variable or function of the same name is fine)
-   *   must not take one of them, or the file no longer type-checks or a type
-   *   changes what it refers to.
+   * The names the file already gives a type or import meaning where the
+   *   block is: an import, a `require()` alias, a class (also a JavaScript
+   *   function using `this`, which TypeScript treats as one), a TypeScript
+   *   type, enum or namespace, a `@typedef` or an `@import`, in the scopes
+   *   around the block; a global the code uses; or a name another type in the
+   *   file refers to. An `@import` added by the fixer (which is type-only, so a
+   *   variable or function of the same name is fine) must not take one of
+   *   them, or the file no longer type-checks or a type changes what it refers
+   *   to.
    * @returns {Set<string>}
    */
   const getTakenNames = () => {
@@ -122,7 +126,7 @@ export default iterateJsdoc(({
     } = /** @type {import('eslint').Scope.ScopeManager & {globalScope: import('eslint').Scope.Scope}} */ (
       sourceCode.scopeManager
     );
-    const topScopes = [
+    const scopes = new Set([
       globalScope,
       // The module scope, or the function scope of CommonJS
       ...globalScope.childScopes.filter(({
@@ -130,30 +134,79 @@ export default iterateJsdoc(({
       }) => {
         return block === sourceCode.ast;
       }),
-    ];
+    ]);
+    // A JSDoc type is resolved from the position of its block
+    for (let scope = documentedNode ? sourceCode.getScope(documentedNode) : null; scope; scope = scope.upper) {
+      scopes.add(scope);
+    }
 
     const names = new Set(/** @type {string[]} */ ([
-      ...topScopes.flatMap(({
+      ...[
+        ...scopes,
+      ].flatMap(({
         variables,
       }) => {
         return variables.filter(({
           defs,
         }) => {
           return defs.some(({
-            node,
+            node: defNode,
             type,
           }) => {
             return typeDefinitionTypes.has(type) || (
+              type === 'FunctionName' &&
+              Boolean(/** @type {{thisFound?: boolean}|null} */ (
+                sourceCode.scopeManager?.acquire(defNode)
+              )?.thisFound)
+            ) || (
               type === 'Variable' &&
-              node.init?.type === 'CallExpression' &&
-              node.init.callee.type === 'Identifier' &&
-              node.init.callee.name === 'require'
+              defNode.init?.type === 'CallExpression' &&
+              defNode.init.callee.type === 'Identifier' &&
+              defNode.init.callee.name === 'require'
             );
           });
         }).map(({
           name,
         }) => {
           return name;
+        });
+      }),
+      // A global the code uses (built in, configured or unknown), which a
+      //   type-only `@import` of the same name would hide
+      ...globalScope.through.map(({
+        identifier: {
+          name,
+        },
+      }) => {
+        return name;
+      }),
+      ...globalScope.variables.filter(({
+        defs,
+        references,
+      }) => {
+        return !defs.length && references.length;
+      }).map(({
+        name,
+      }) => {
+        return name;
+      }),
+      ...comments.flatMap(({
+        tags,
+      }) => {
+        return tags.flatMap(({
+          parsedType,
+        }) => {
+          /** @type {string[]} */
+          const typeNames = [];
+          if (parsedType) {
+            traverse(parsedType, (nde) => {
+              if (nde.type === 'JsdocTypeName') {
+                typeNames.push(nde.value);
+              }
+            });
+          }
+
+          return typeNames;
         });
       }),
       ...typedefs.map(({
