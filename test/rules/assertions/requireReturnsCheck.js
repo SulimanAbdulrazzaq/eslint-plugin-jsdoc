@@ -275,6 +275,29 @@ export default /** @type {import('../index.js').TestCases} */ ({
     },
     {
       code: `
+          /**
+           * @returns {Promise<void>}
+           */
+          const quux = () => new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve();
+            });
+          });
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'JSDoc @returns declaration present but return expression not available in function.',
+        },
+      ],
+      options: [
+        {
+          exemptAsync: false,
+        },
+      ],
+    },
+    {
+      code: `
         /**
          * Description.
          * @returns {SomeType}
@@ -1003,6 +1026,19 @@ export default /** @type {import('../index.js').TestCases} */ ({
       `,
       languageOptions: {
         ecmaVersion: 8,
+      },
+    },
+    {
+      code: `
+          /**
+           * @param ms time in millis
+           * @returns {Promise<void>}
+           */
+          export const sleep = (ms: number) =>
+            new Promise<void>((res) => setTimeout(res, ms));
+      `,
+      languageOptions: {
+        parser: typescriptEslintParser,
       },
     },
     {

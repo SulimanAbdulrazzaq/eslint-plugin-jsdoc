@@ -1603,6 +1603,9 @@ function foo () {
 }
 // "jsdoc/require-jsdoc": ["error"|"warn", {"exemptEmptyFunctions":true}]
 
+export const sleep = () => new Promise<void>((res) => setTimeout(res, 1));
+// "jsdoc/require-jsdoc": ["error"|"warn", {"exemptEmptyFunctions":true,"require":{"ArrowFunctionExpression":true}}]
+
 const test = {};
 /**
  * test
