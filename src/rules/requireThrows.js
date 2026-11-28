@@ -39,7 +39,7 @@ export default iterateJsdoc(({
     return;
   }
 
-  const tags = utils.getTags(tagName);
+  const tags = utils.getTagsWithAliases(tagName);
   const iteratingFunction = utils.isIteratingFunction();
 
   // In case the code returns something, we expect a return value in JSDoc.

@@ -47,7 +47,7 @@ const checkTagName = (utils, report, tagName) => {
     return [];
   }
 
-  const tags = utils.getTags(preferredTagName);
+  const tags = utils.getTagsWithAliases(preferredTagName);
 
   if (tags.length > 1) {
     report(`Found more than one @${preferredTagName} declaration.`);
