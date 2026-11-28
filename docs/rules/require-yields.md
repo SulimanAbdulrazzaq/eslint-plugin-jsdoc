@@ -859,5 +859,13 @@ function * quux (foo) {
  */
 export { foo } from "bar"
 // "jsdoc/require-yields": ["error"|"warn", {"contexts":["ExportNamedDeclaration"]}]
+
+/**
+ * Counts.
+ * @yield {number} A number.
+ */
+function * count () {
+  yield 1;
+}
 ````
 

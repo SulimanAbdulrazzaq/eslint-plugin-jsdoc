@@ -881,6 +881,16 @@ function quux (a) {\r
 }
 // "jsdoc/require-returns": ["error"|"warn", {"enableFixer":true}]
 // Message: Missing JSDoc @returns declaration.
+
+/**
+ * Gets one.
+ * @return {number} One.
+ * @returns {number} One.
+ */
+function one () {
+  return 1;
+}
+// Message: Found more than one @returns declaration.
 ````
 
 
@@ -1441,5 +1451,14 @@ export function quux(val: unknown) {}
  * @param val The value.
  */
 export declare function quux(val: unknown): Promise<void>;
+
+/**
+ * Gets one.
+ * @return {number} One.
+ */
+function one () {
+  return 1;
+}
+// "jsdoc/require-returns": ["error"|"warn", {"enableFixer":true}]
 ````
 
