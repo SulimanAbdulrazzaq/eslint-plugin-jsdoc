@@ -1418,6 +1418,154 @@ let linter;
       `,
     },
     {
+      code: `
+        /**
+         * @param {import('process').Process} p The process.
+         * @returns {string} The folder.
+         */
+        export function run (p) {
+          return process.cwd();
+        }
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      languageOptions: {
+        globals: {
+          process: 'readonly',
+        },
+      },
+      output: null,
+    },
+    {
+      code: `
+        /**
+         * @param {import('crypto').KeyObject} key The key.
+         * @returns {string} An id for it.
+         */
+        export function idFor (key) {
+          return key.type + crypto.randomUUID();
+        }
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        /**
+         * @param {import('undici').Response} res The response.
+         */
+        export function status (res) {}
+
+        /**
+         * @param {Response} res A fetch response.
+         */
+        export function text (res) {}
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      options: [
+        {
+          outputType: 'named-import',
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        export function outer () {
+          class User {}
+
+          /**
+           * @param {import('db').User} u The user.
+           */
+          function inner (u) {}
+        }
+      `,
+      errors: [
+        {
+          line: 6,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      options: [
+        {
+          outputType: 'named-import',
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        function User () {
+          this.name = 'a';
+        }
+
+        /**
+         * @param {import('db').User} u The user.
+         */
+        export function show (u) {}
+      `,
+      errors: [
+        {
+          line: 7,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      options: [
+        {
+          outputType: 'named-import',
+        },
+      ],
+      output: null,
+    },
+    {
+      code: `
+        /**
+         * @param {import('db').User} u The user.
+         */
+        export function show (u) {}
+
+        export function other () {
+          class User {}
+        }
+      `,
+      errors: [
+        {
+          line: 3,
+          message: 'Inline `import()` found; prefer `@import`',
+        },
+      ],
+      options: [
+        {
+          outputType: 'named-import',
+        },
+      ],
+      output: `
+        /** @import { User } from 'db'; */
+        /**
+         * @param {User} u The user.
+         */
+        export function show (u) {}
+
+        export function other () {
+          class User {}
+        }
+      `,
+    },
+    {
       code: '/** @type {{\n *   a: import(\'foo\').Bar,\n * }} */\nlet x;\n',
       errors: [
         {
