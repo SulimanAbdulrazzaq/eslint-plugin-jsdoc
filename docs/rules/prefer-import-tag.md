@@ -489,6 +489,69 @@ export function join (p) {}
 export function run (p) {}
 // Message: Inline `import()` found; prefer `@import`
 
+/**
+ * @param {import('process').Process} p The process.
+ * @returns {string} The folder.
+ */
+export function run (p) {
+  return process.cwd();
+}
+// Message: Inline `import()` found; prefer `@import`
+
+/**
+ * @param {import('crypto').KeyObject} key The key.
+ * @returns {string} An id for it.
+ */
+export function idFor (key) {
+  return key.type + crypto.randomUUID();
+}
+// Message: Inline `import()` found; prefer `@import`
+
+/**
+ * @param {import('undici').Response} res The response.
+ */
+export function status (res) {}
+
+/**
+ * @param {Response} res A fetch response.
+ */
+export function text (res) {}
+// "jsdoc/prefer-import-tag": ["error"|"warn", {"outputType":"named-import"}]
+// Message: Inline `import()` found; prefer `@import`
+
+export function outer () {
+  class User {}
+
+  /**
+   * @param {import('db').User} u The user.
+   */
+  function inner (u) {}
+}
+// "jsdoc/prefer-import-tag": ["error"|"warn", {"outputType":"named-import"}]
+// Message: Inline `import()` found; prefer `@import`
+
+function User () {
+  this.name = 'a';
+}
+
+/**
+ * @param {import('db').User} u The user.
+ */
+export function show (u) {}
+// "jsdoc/prefer-import-tag": ["error"|"warn", {"outputType":"named-import"}]
+// Message: Inline `import()` found; prefer `@import`
+
+/**
+ * @param {import('db').User} u The user.
+ */
+export function show (u) {}
+
+export function other () {
+  class User {}
+}
+// "jsdoc/prefer-import-tag": ["error"|"warn", {"outputType":"named-import"}]
+// Message: Inline `import()` found; prefer `@import`
+
 /** @type {{
  *   a: import('foo').Bar,
  * }} */
