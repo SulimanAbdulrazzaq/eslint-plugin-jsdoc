@@ -220,6 +220,17 @@ function quux() {
 // Message: JSDoc @returns declaration present but return expression not available in function.
 
 /**
+ * @returns {Promise<void>}
+ */
+const quux = () => new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve();
+  });
+});
+// "jsdoc/require-returns-check": ["error"|"warn", {"exemptAsync":false}]
+// Message: JSDoc @returns declaration present but return expression not available in function.
+
+/**
  * Description.
  * @returns {SomeType}
  */
@@ -637,6 +648,13 @@ const quux = async function () {}
  * @returns {Promise<void>}
  */
 const quux = async () => {}
+
+/**
+ * @param ms time in millis
+ * @returns {Promise<void>}
+ */
+export const sleep = (ms: number) =>
+  new Promise<void>((res) => setTimeout(res, ms));
 
 /**
  * @returns Foo.
