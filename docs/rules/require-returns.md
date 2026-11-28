@@ -714,6 +714,22 @@ export const sleep = (ms: number) => {
 // Message: Missing JSDoc @returns declaration.
 
 /**
+ * Gets one.
+ */
+const one = () => new Promise((resolve) => {
+  resolve(1);
+});
+// Message: Missing JSDoc @returns declaration.
+
+/**
+ * @param ms time in millis
+ */
+export const sleep = (ms: number) =>
+  new Promise<void>((res) => setTimeout(res, ms));
+// "jsdoc/require-returns": ["error"|"warn", {"forceReturnsWithAsync":true}]
+// Message: Missing JSDoc @returns declaration.
+
+/**
  * Reads a test fixture.
  */
 export function readFixture(path: string): Promise<Buffer>;
@@ -1370,6 +1386,13 @@ export const sleep = (ms: number) =>
 export const sleep = (ms: number) => {
   return new Promise<void>((res) => setTimeout(res, ms));
 };
+
+/**
+ * @param ms time in millis
+ */
+export const sleep = (ms) => new Promise((resolve) => {
+  setTimeout(() => resolve(), ms);
+});
 
 /**
  * Reads a test fixture.
