@@ -648,7 +648,15 @@ export default iterateJsdoc(({
     return;
   }
 
-  const canUnwrap = enableFixer && mayRemove(castInferredType, castAssertedType) && (
+  const canUnwrap = enableFixer && mayRemove(castInferredType, castAssertedType) &&
+    // A sequence (`(i++, n)`) needs its parentheses everywhere but as the
+    //   whole argument of a `return` or `throw`
+    (node.type !== 'SequenceExpression' || parent.type === 'ReturnStatement' ||
+      parent.type === 'ThrowStatement') &&
+    // The fix keeps only the text of the expression, so it would drop a
+    //   comment between it and the parentheses
+    !sourceCode.getCommentsBefore(/** @type {any} */ (node)).length &&
+    !sourceCode.getCommentsAfter(/** @type {any} */ (node)).length && (
     unwrappableParentTypes.has(parent.type) ||
     (parent.type === 'ConditionalExpression' && parent.test !== node) ||
     ((parent.type === 'CallExpression' || parent.type === 'NewExpression') &&
