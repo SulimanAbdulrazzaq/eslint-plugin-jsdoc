@@ -239,6 +239,13 @@ function * quux (foo) {
 }
 // "jsdoc/require-yields-check": ["error"|"warn", {"next":true}]
 // Message: JSDoc @next declaration set with "never" but yield expression with return value is present in function.
+
+/**
+ * Counts.
+ * @yield {number} A number.
+ */
+function * count () {}
+// Message: JSDoc @yields declaration present but yield expression not available in function.
 ````
 
 

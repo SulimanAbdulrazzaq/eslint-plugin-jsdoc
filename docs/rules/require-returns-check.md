@@ -586,6 +586,15 @@ function quux (kind) {
   }
 }
 // Message: JSDoc @returns declaration present but return expression not available in function.
+
+/**
+ * Logs.
+ * @return {number} One.
+ */
+function log () {
+  console.log(1);
+}
+// Message: JSDoc @returns declaration present but return expression not available in function.
 ````
 
 
